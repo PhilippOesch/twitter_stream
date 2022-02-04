@@ -100,6 +100,11 @@ class TwitterStreamer:
             "tag": "primary tweet"
         }]
 
+    def update_rules(self, ids: list, rules: list):
+        self.delete_rules(ids)
+        rule_ids = self.set_rules(rules)
+        return rule_ids
+
     def setup_conversation_rules(self, conversations: dict[str] = None) -> list:
         result = []
         for user in conversations:
