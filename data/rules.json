@@ -1,24 +1,23 @@
 {
-  "followers": {
-    "users": [
-      "Karl_Lauterbach",
-      "c_lindner",
-      "SWagenknecht",
-      "HeikoMaas",
-      "GregorGysi",
-      "ABaerbock",
-      "OlafScholz",
-      "KuehniKev",
-      "cem_oezdemir",
-      "jensspahn",
-      "GoeringEckardt",
-      "ArminLaschet",
-      "_FriedrichMerz",
-      "Alice_Weidel",
-      "katjakipping"
-    ],
-    "rule_id": null
-  },
-  "conversations": {
-  }
+    "followers": {
+        "users": [
+            "Karl_Lauterbach",
+            "c_lindner",
+            "SWagenknecht",
+            "HeikoMaas",
+            "GregorGysi",
+            "ABaerbock",
+            "OlafScholz",
+            "KuehniKev",
+            "cem_oezdemir",
+            "jensspahn",
+            "GoeringEckardt",
+            "ArminLaschet",
+            "_FriedrichMerz",
+            "Alice_Weidel",
+            "katjakipping"
+        ],
+        "rule_id": "1489629372826927107"
+    },
+    "conversations": {}
 }
