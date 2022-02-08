@@ -1,7 +1,7 @@
 import json
 
 from general import utils
-from general.TwitterStreamClass import TwitterStreamer
+from general.TwitterStreamer import TwitterStreamer
 from general.project_dataclasses import RuleSet, BearerToken
 
 creds: BearerToken = utils.load_creds("./general/bearertoken.json")

@@ -21,17 +21,21 @@ class TweetConsumer:
         for message in self.consumer:
             self.process_message(json.loads(message.value))
 
-    def process_message(self, message):
-        logging.info("TweetConsumer reached")
-        tweet: Tweet = utils.message_to_tweet(message)
+    def process_tweet(self, tweet: Tweet):
         print(tweet)
-        tweet.user.tweet_count += 1
+        result = self.database.get_user(tweet.user.screen_name)
+        if result is not None:
+            user = utils.neo4j_record_to_user(result)
+            tweet.user.tweet_count = user.tweet_count + 1
         self.database.create_or_merge_user(tweet.user)
         polarity = sentiment_analysis.get_sentiment(tweet.full_text)
         self.create_relationships(tweet, polarity)
 
+    def process_message(self, message):
+        tweet: Tweet = utils.message_to_tweet(message)
+        self.process_tweet(tweet)
+
     def create_relationships(self, tweet, polarity: int):
-        print(tweet.mentions)
         if tweet.mentions is not None:
             for mention in tweet.mentions:
                 if tweet.user.screen_name != mention.screen_name:

@@ -1,23 +1,14 @@
 {
-    "followers": {
-        "users": [
-            "Karl_Lauterbach",
-            "c_lindner",
-            "SWagenknecht",
-            "HeikoMaas",
-            "GregorGysi",
-            "ABaerbock",
-            "OlafScholz",
-            "KuehniKev",
-            "cem_oezdemir",
-            "jensspahn",
-            "GoeringEckardt",
-            "ArminLaschet",
-            "_FriedrichMerz",
-            "Alice_Weidel",
-            "katjakipping"
-        ],
-        "rule_id": "1489629372826927107"
-    },
-    "conversations": {}
+    "followers": null,
+    "conversations": {
+        "java": {
+            "tweet_ids": [
+                "1490880367544664065",
+                "1490880373261156352",
+                "1490880402482872320",
+                "1490880415070322689"
+            ],
+            "rule_id": "1490880464965578752"
+        }
+    }
 }

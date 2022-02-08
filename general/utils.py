@@ -4,6 +4,7 @@ import json
 import time
 
 import neo4j
+from neo4j.graph import Graph
 
 from general.project_dataclasses import RuleSet, BearerToken, FollowerRule, ConversationRule, Tweet, User, Relationship
 
@@ -55,8 +56,6 @@ def create_tweet_from_stream(_input: dict) -> Tweet:
         if "mentions" in data["entities"]:
             # mentions = [entry["username"] for entry in data["entities"]["mentions"]]
             mentions = resolve_mentions_stream(data["entities"]["mentions"])
-
-    print("Mentions:", mentions)
 
     in_reply_to_user_id = None
     if "in_reply_to_user_id" in data:
@@ -117,23 +116,31 @@ def format_date(date_string: str) -> str:
     return time.strftime('%Y-%m-%d %H:%M:%S', time.strptime(date_string, "%Y-%m-%dT%H:%M:%S.%fZ"))
 
 
-def neo4j_result_infos(result) -> tuple[Relationship, User, User]:
-    raw_rel = result[0]
-    raw_user1 = result[1]
-    raw_user2 = result[2]
+def neo4j_record_to_user(result) -> User:
+    return User(result["u"].get("screen_name"),
+                result["u"].get("id"),
+                result["u"].get("tweet_count"),
+                result["u"].get("type"))
 
-    rel: Relationship = Relationship(raw_rel.properties["rel_id"], raw_user1.properties["screen_name"],
-                                     raw_user2.properties["screen_name"], raw_rel.properties["weight"],
-                                     raw_rel.properties["avg_polarity"], raw_rel.properties["weighted_polarity"])
 
-    start_user: User = User(raw_user1.properties["screen_name"],
-                            raw_user1.properties["id"],
-                            raw_user1.properties["tweet_count"],
-                            raw_user1.properties["type"])
+def neo4j_result_infos(result: Graph) -> tuple[Relationship, User, User]:
+    raw_rel = list(result.relationships.values())
+    if len(raw_rel) <= 0:
+        return None, None, None
+    users = list(result.nodes.values())
 
-    end_user: User = User(raw_user2.properties["screen_name"],
-                          raw_user2.properties["id"],
-                          raw_user2.properties["tweet_count"],
-                          raw_user2.properties["type"])
+    rel: Relationship = Relationship(raw_rel[0].properties["rel_id"], users[0].properties["screen_name"],
+                                     users[1].properties["screen_name"], raw_rel[0].properties["weight"],
+                                     raw_rel[0].properties["avg_polarity"], raw_rel[0].properties["weighted_polarity"])
+
+    start_user: User = User(users[0].properties["screen_name"],
+                            users[0].properties["id"],
+                            users[0].properties["tweet_count"],
+                            users[0].properties["type"])
+
+    end_user: User = User(users[1].properties["screen_name"],
+                          users[1].properties["id"],
+                          users[1].properties["tweet_count"],
+                          users[1].properties["type"])
 
     return rel, start_user, end_user
