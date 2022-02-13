@@ -1,4 +1,5 @@
-# Twitter Analyse
+# Auswerten von Nutzeraktivitäten
+### Flame-Wars-Erkennung in Sozialen Netzwerken am Beispiel Twitter
 
 ## Inhalt
 
