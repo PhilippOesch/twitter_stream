@@ -8,7 +8,7 @@ from general.project_dataclasses import BearerToken, RuleSet, Tweet
 
 RULE_SET_PATH = "./data/rules.json"
 
-creds: BearerToken = utils.load_creds("./general/bearertoken.json")
+creds: BearerToken = utils.load_creds("credentials/bearertoken.json")
 
 if __name__ == "__main__":
     rule_sets: RuleSet = utils.load_rules(RULE_SET_PATH)
