@@ -10,7 +10,7 @@ class FollowerRule:
 @dataclass
 class ConversationRule:
     tweet_ids: list[str]
-    rule_id: str = None,
+    rule_ids: list[str] = None,
 
 
 @dataclass

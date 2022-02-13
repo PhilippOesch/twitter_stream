@@ -16,7 +16,7 @@ def start_secondary_consumer(database: Neo4JHelper):
 
 if __name__ == "__main__":
     database: Neo4JHelper = Neo4JHelper()
-    database.reset()
+    # database.reset()
     # primary_consumer = PrimaryTweetConsumer(env_vars.KAFKA_SERVER)
     primary_tweet_consumer_thread = threading.Thread(target=start_primary_consumer, args=[database])
     secondary_tweet_consumer_thread = threading.Thread(target=start_secondary_consumer, args=[database])

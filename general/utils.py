@@ -2,10 +2,12 @@ import dataclasses
 import datetime
 import json
 import time
+from email import utils
 
 import neo4j
 from neo4j.graph import Graph
 
+import env_vars
 from general.project_dataclasses import RuleSet, BearerToken, FollowerRule, ConversationRule, Tweet, User, Relationship
 
 
@@ -14,14 +16,6 @@ def load_creds(path) -> BearerToken:
         creds = json.load(file)
 
     return BearerToken(creds["token_type"], creds["access_token"])
-
-
-def load_rules(path) -> RuleSet:
-    with open(path, "r") as file:
-        rule_set_dict = json.load(file)
-
-    return RuleSet(convert_follower_rule(rule_set_dict["followers"]),
-                   convert_conversation_rule(rule_set_dict["conversations"]))
 
 
 def convert_follower_rule(_input: dict) -> FollowerRule:
@@ -34,7 +28,7 @@ def convert_conversation_rule(_input: dict[str]):
 
     result: dict[str] = {}
     for entry in _input:
-        result[entry] = ConversationRule(_input[entry]["tweet_ids"], _input[entry]["rule_id"])
+        result[entry] = ConversationRule(_input[entry]["tweet_ids"], _input[entry]["rule_ids"])
 
     return result
 
@@ -60,7 +54,6 @@ def create_tweet_from_stream(_input: dict) -> Tweet:
     in_reply_to_user_id = None
     if "in_reply_to_user_id" in data:
         in_reply_to_user_id = data["in_reply_to_user_id"]
-    print(data)
 
     created_at = format_date(data["created_at"])
     return Tweet(id=data["id"],
@@ -90,9 +83,12 @@ def resolve_mentions_message(data: dict) -> list[User]:
     return result
 
 
-def save_rules(path, ruleSet) -> None:
-    with open(path, 'w') as f:
-        json.dump(dataclasses.asdict(ruleSet), f, indent=4)
+def load_rules(path) -> RuleSet:
+    with open(path, "r") as file:
+        rule_set_dict = json.load(file)
+
+    return RuleSet(convert_follower_rule(rule_set_dict["followers"]),
+                   convert_conversation_rule(rule_set_dict["conversations"]))
 
 
 def message_to_tweet(message: dict) -> Tweet:
@@ -101,7 +97,7 @@ def message_to_tweet(message: dict) -> Tweet:
         mentions = resolve_mentions_message(message["mentions"])
 
     return Tweet(id=message["id"],
-                 created_at=message["id"],
+                 created_at=message["created_at"],
                  full_text=message["full_text"],
                  conversation_id=message["conversation_id"],
                  user=create_user(message["user"]["screen_name"], message["user"]["user_id"],
@@ -124,23 +120,71 @@ def neo4j_record_to_user(result) -> User:
 
 
 def neo4j_result_infos(result: Graph) -> tuple[Relationship, User, User]:
-    raw_rel = list(result.relationships.values())
+    print(result)
+    raw_rel = list(result._relationships.values())
     if len(raw_rel) <= 0:
         return None, None, None
-    users = list(result.nodes.values())
+    users = list(result._nodes.values())
 
-    rel: Relationship = Relationship(raw_rel[0].properties["rel_id"], users[0].properties["screen_name"],
-                                     users[1].properties["screen_name"], raw_rel[0].properties["weight"],
-                                     raw_rel[0].properties["avg_polarity"], raw_rel[0].properties["weighted_polarity"])
+    rel: Relationship = Relationship(raw_rel[0]._properties["rel_id"], users[0]._properties["screen_name"],
+                                     users[1]._properties["screen_name"], raw_rel[0]._properties["weight"],
+                                     raw_rel[0]._properties["avg_polarity"],
+                                     raw_rel[0]._properties["weighted_polarity"])
 
-    start_user: User = User(users[0].properties["screen_name"],
-                            users[0].properties["id"],
-                            users[0].properties["tweet_count"],
-                            users[0].properties["type"])
+    start_user: User = User(users[0]._properties["screen_name"],
+                            users[0]._properties["id"],
+                            users[0]._properties["tweet_count"],
+                            users[0]._properties["type"])
 
-    end_user: User = User(users[1].properties["screen_name"],
-                          users[1].properties["id"],
-                          users[1].properties["tweet_count"],
-                          users[1].properties["type"])
+    end_user: User = User(users[1]._properties["screen_name"],
+                          users[1]._properties["id"],
+                          users[1]._properties["tweet_count"],
+                          users[1]._properties["type"])
 
     return rel, start_user, end_user
+
+
+def save_rules(path, ruleSet) -> None:
+    with open(path, 'w') as f:
+        json.dump(dataclasses.asdict(ruleSet), f, indent=4)
+
+        def setup_follower_rules(followers: list[str]) -> list:
+            with_prefix_followers = ["from:" + follower for follower in followers]
+            return [{
+                "value": "( " + (" OR ".join(with_prefix_followers)) + ") -is:retweet lang:%s" % env_vars.LANGUAGE,
+                "tag": "primary_tweet"
+            }]
+
+
+def get_single_conversation_rule(conversation_ids: list, user: str):
+    with_prefix = ["conversation_id:" + conversation for conversation in conversation_ids]
+    return {
+        "value": " OR ".join(with_prefix),
+        "tag": user
+    }
+
+
+def setup_conversation_rules_for_ids(result: list, conversation_ids: list, user: str):
+    # with_prefix = ["conversation_id:" + conversation for conversation in conversation_ids]
+    conv = []
+    for i in range(len(conversation_ids)):
+        conv.append(conversation_ids[i])
+        if (i + 1) % 10 == 0:
+            result.append(get_single_conversation_rule(list(conv), user))
+            conv = []
+
+    if len(conv) > 0:
+        result.append(get_single_conversation_rule(list(conv), user))
+
+    return result
+
+
+def setup_conversation_rules(user: str, conversations: ConversationRule = None) -> list:
+    return setup_conversation_rules_for_ids([], conversations.tweet_ids, user)
+
+def setup_follower_rules(followers: list[str]) -> list:
+    with_prefix_followers = ["from:" + follower for follower in followers]
+    return [{
+        "value": "( " + (" OR ".join(with_prefix_followers)) + ") -is:retweet lang:%s" % env_vars.LANGUAGE,
+        "tag": "primary_tweet"
+    }]

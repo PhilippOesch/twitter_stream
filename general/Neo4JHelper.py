@@ -14,17 +14,16 @@ class Neo4JHelper:
         self.create_indexes()
 
     def create_indexes(self):
-        query1 = """
-            CREATE INDEX IF NOT EXISTS FOR (u:User) ON (u.screen_name)
-        """
-
-        query2 = """            
-            CREATE INDEX IF NOT EXISTS FOR (r:CommentedAt) ON (r.rel_id)
-        """
+        query1 = "CREATE INDEX IF NOT EXISTS FOR (u:User) ON (u.screen_name)"
+        query2 = "CREATE INDEX IF NOT EXISTS FOR (r:CommentedAt) ON (r.rel_id)"
+        query3 = "CREATE INDEX IF NOT EXISTS FOR (h:Hashtag) ON (h.tag)"
+        query4 = "CREATE INDEX IF NOT EXISTS FOR (t:Tweet) ON (t.id)"
 
         with self.driver.session() as session:
             session.run(query1)
             session.run(query2)
+            session.run(query3)
+            session.run(query4)
 
     def reset(self):
         query = """
@@ -50,6 +49,49 @@ class Neo4JHelper:
             result = session.run(query)
             return result.single()
 
+    def create_hashtag(self, user: User, hashtag: str):
+        query = """
+            MATCH (u:User{screen_name: "%s"})
+            MERGE (h:Hashtag{tag: "%s"})
+            ON CREATE SET h.count= 1
+            ON MATCH SET h.count= h.count+1
+            MERGE (u)-[r:usedHashtag]->(h)
+            ON CREATE SET r.weight= 1
+            ON MATCH SET r.weight= r.weight+1
+            RETURN r
+        """ % (user.screen_name, hashtag)
+
+        with self.driver.session() as session:
+            result = session.run(query)
+            return result.single()
+
+    def create_tweet(self, tweet: Tweet):
+        query = """
+            MATCH (u:User {screen_name: "%s"})
+            CREATE (t:Tweet{
+                id : "%s",
+                screen_name: "%s",
+                user_id: "%s",
+                polarity: %s,
+                created_at: "%s",
+                hashtags: %s,
+                full_test: "%s"
+            })
+            CREATE (u)-[r:wrote]->(t)
+        """ % (tweet.user.screen_name,
+               tweet.id,
+               tweet.user.screen_name,
+               tweet.user.user_id,
+               tweet.sentiment,
+               tweet.created_at,
+               ("[]" if tweet.hashtags is None else tweet.hashtags),
+               tweet.full_text.replace("\"", "'")
+               )
+
+        with self.driver.session() as session:
+            result = session.run(query)
+            return result.single()
+
     def create_or_merge_user(self, user: User):
         if user.tweet_count is None:
             tweet_count = 1
@@ -64,7 +106,7 @@ class Neo4JHelper:
                     u.tweet_count = 1,
                     u.type = "%s"
             ON MATCH
-                SET u.tweet_count = %s
+                SET u.tweet_count = %s + u.tweet_count
             RETURN u.screen_name as screen_name
         """ % (user.screen_name, user.user_id, user.type, tweet_count)
 

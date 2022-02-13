@@ -2,6 +2,7 @@ import json
 import logging
 
 import dacite
+import langdetect
 
 from kafka import KafkaConsumer
 
@@ -12,23 +13,30 @@ from general.project_dataclasses import Tweet, Relationship, User
 
 
 class TweetConsumer:
-    def __init__(self, kafka_server, topic, database: Neo4JHelper):
+    def __init__(self, group_id, kafka_server, topic, database: Neo4JHelper):
         self.database = database
         self.consumer = KafkaConsumer(
             topic,
             bootstrap_servers=kafka_server,
+            group_id=group_id
         )
         for message in self.consumer:
             self.process_message(json.loads(message.value))
 
     def process_tweet(self, tweet: Tweet):
-        print(tweet)
+        print("Process:", tweet)
         result = self.database.get_user(tweet.user.screen_name)
         if result is not None:
             user = utils.neo4j_record_to_user(result)
             tweet.user.tweet_count = user.tweet_count + 1
         self.database.create_or_merge_user(tweet.user)
+
+        if tweet.hashtags is not None:
+            for hashtag in tweet.hashtags:
+                self.database.create_hashtag(tweet.user, hashtag)
         polarity = sentiment_analysis.get_sentiment(tweet.full_text)
+        tweet.sentiment = float(polarity)
+        self.database.create_tweet(tweet)
         self.create_relationships(tweet, polarity)
 
     def process_message(self, message):

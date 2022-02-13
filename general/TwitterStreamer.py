@@ -72,7 +72,7 @@ class TwitterStreamer:
 
         return rule_ids
 
-    def get_stream(self) -> None:
+    def start_stream(self) -> None:
         response = requests.get(
             "https://api.twitter.com/2/tweets/search/stream",
             auth=self.bearer_oauth,
@@ -102,6 +102,3 @@ class TwitterStreamer:
         self.delete_rules(ids)
         rule_ids = self.set_rules(rules)
         return rule_ids
-
-    def start_filter_stream(self) -> None:
-        self.get_stream()
