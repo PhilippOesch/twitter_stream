@@ -1,13 +1,14 @@
 import csv
 
-from Streaming_Architekture.general import utils
+
+import analysis_helper as helper
 
 import_header = [":START_ID", ":END_ID", "weight:int", "polarity:float", ":TYPE"]
 
-_, primary_tweet_data, _, _, _ = utils.get_tweet_infos(
+_, primary_tweet_data, _, _, _ = helper.get_tweet_infos(
     'data/dataset_primary_tweets_1-1-2021_1-9-2021_textblob.csv',
     hashtag_treshhold=0)
-analyzed_hashes_tweets, replydata, _header, char_count, user_ids1 = utils.get_tweet_infos(
+analyzed_hashes_tweets, replydata, _header, char_count, user_ids1 = helper.get_tweet_infos(
     'data/dataset_1-1-2021_1-9-2021_textblob_mentions.csv',
     hashtag_treshhold=0)
 
@@ -23,7 +24,7 @@ def create_sentiment_relationships(_data: [], _users: dict, _filepath, isTextBlo
     for row in _data:
         screen_name: str = row["screen_name"]
         if use_mentions:
-            mentions_array: [] = utils.decode_array(row["mentions"])
+            mentions_array: [] = helper.decode_array(row["mentions"])
             if screen_name in _users:
                 for mention in mentions_array:
                     if mention in users:
@@ -89,7 +90,7 @@ def create_new_relationship_in_dictionary(_relationship_string: str, screen_name
             "from_id": _users[screen_name],
             "to_id": _users[_mention],
             "weight": 1,
-            "avg_polarity": utils.polarity_to_value(_row["sentiment_bert"])
+            "avg_polarity": helper.polarity_to_value(_row["sentiment_bert"])
         }
     else:
         _fulldict[_relationship_string] = {
@@ -121,7 +122,7 @@ def prepare_user(_data: [], _filepath):
 
 
 def calc_avg_polarity_bert(old_weight, old_polarity, new_polarity) -> float:
-    return ((old_polarity * old_weight) + utils.polarity_to_value(
+    return ((old_polarity * old_weight) + helper.polarity_to_value(
         new_polarity)) / (old_weight + 1)
 
 
