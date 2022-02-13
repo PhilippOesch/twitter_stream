@@ -1,16 +1,12 @@
-import csv
-from dataclasses import dataclass
 from neo4j import GraphDatabase
 
-from general import utils
+import analysis_helper as helper
 from matplotlib import pyplot as plt
 import networkx as nx
 from networkx.algorithms.community import k_clique_communities
 from networkx.algorithms.community import greedy_modularity_communities
-from enum import Enum
 
 driver = GraphDatabase.driver('neo4j://localhost:7687', auth=("neo4j", "test"))
-
 
 class NetworkXGraph:
     def __init__(self, load_from_neo4j: bool, neo4jquery: str = None, _nodes_filepath=None, _rel_filepath=None):
@@ -22,24 +18,24 @@ class NetworkXGraph:
             self.setup_neo4j(neo4jquery)
 
     def setup_file(self, _nodes_filepath, _rel_filepath):
-        nodes = utils.load_nodes(_nodes_filepath)
-        rels = utils.load_relationships(_rel_filepath)
+        nodes = helper.load_nodes(_nodes_filepath)
+        rels = helper.load_relationships(_rel_filepath)
         self.create_graph(nodes, rels)
 
     def setup_neo4j(self, _query):
         results = driver.session().run(_query)
-        nodes: list[utils.Node] = []
-        rels: list[utils.Relationship] = []
+        nodes: list[helper.Node] = []
+        rels: list[helper.Relationship] = []
         database_nodes = list(results.graph()._nodes.values())
         for node in database_nodes:
-            new_node: utils.Node = utils.Node(int(node._properties["user_id"]),
+            new_node: helper.Node = helper.Node(int(node._properties["user_id"]),
                                   node._properties["screen_name"],
                                   list(node.labels)[0])
             nodes.append(new_node)
 
         database_rels = list(results.graph()._relationships.values())
         for rel in database_rels:
-            new_rel: utils.Relationship = utils.Relationship(rel.nodes[0]._properties["user_id"],
+            new_rel: helper.Relationship = helper.Relationship(rel.nodes[0]._properties["user_id"],
                                                  rel.nodes[1]._properties["user_id"],
                                                  int(rel._properties["weight"]),
                                                  float(rel._properties["polarity"]),

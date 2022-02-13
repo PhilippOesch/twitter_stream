@@ -1,7 +1,7 @@
 import csv
 
 from textblob_de import TextBlobDE as TextBlob
-from general import utils
+
 
 from germansentiment import SentimentModel
 

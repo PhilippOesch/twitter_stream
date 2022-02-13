@@ -1,5 +1,3 @@
-
-
 from general.tweepy_init import python_tweets
 import json
 from typing_extensions import TypedDict
