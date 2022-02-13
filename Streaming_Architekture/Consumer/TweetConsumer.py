@@ -16,7 +16,9 @@ def calc_new_values(old_rel: Relationship, polarity: int):
 
 
 class TweetConsumer:
-    def __init__(self, group_id, kafka_server, topic, database: Neo4JHelper):
+    def __init__(self, group_id, kafka_server, topic, database: Neo4JHelper, tweet_type: str):
+        print("TweetConsumer initialised")
+        self.tweet_type = tweet_type
         self.database = database
         self.consumer = KafkaConsumer(
             topic,
@@ -44,6 +46,7 @@ class TweetConsumer:
 
     def process_message(self, message):
         tweet: Tweet = utils.message_to_tweet(message)
+        tweet.user.type = self.tweet_type
         self.process_tweet(tweet)
 
     def create_relationships(self, tweet, polarity: int):
