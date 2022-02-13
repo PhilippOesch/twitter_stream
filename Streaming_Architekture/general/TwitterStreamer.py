@@ -3,7 +3,7 @@ import json
 import requests
 
 from Streaming_Architekture import env_vars
-from Streaming_Architekture.general.project_dataclasses import BearerToken
+from Streaming_Architekture.general.models import BearerToken
 
 
 class TwitterStreamer:

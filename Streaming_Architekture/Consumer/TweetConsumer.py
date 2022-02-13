@@ -4,7 +4,7 @@ from kafka import KafkaConsumer
 
 from Streaming_Architekture.general import utils, sentiment_analysis
 from Streaming_Architekture.general.Neo4JHelper import Neo4JHelper
-from Streaming_Architekture.general.project_dataclasses import Tweet, Relationship, User
+from Streaming_Architekture.general.models import Tweet, Relationship, User
 
 
 def calc_new_values(old_rel: Relationship, polarity: int):

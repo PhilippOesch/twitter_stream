@@ -1,6 +1,6 @@
 from Streaming_Architekture.general import utils
 from Streaming_Architekture.general.TwitterStreamer import TwitterStreamer
-from Streaming_Architekture.general.project_dataclasses import ConversationRule, RuleSet, BearerToken
+from Streaming_Architekture.general.models import ConversationRule, RuleSet, BearerToken
 
 
 class FilteredTwitterStream(TwitterStreamer):

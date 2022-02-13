@@ -5,7 +5,7 @@ import time
 from neo4j.graph import Graph
 
 from Streaming_Architekture import env_vars
-from Streaming_Architekture.general.project_dataclasses import RuleSet, BearerToken, FollowerRule, ConversationRule, Tweet, User, Relationship
+from Streaming_Architekture.general.models import RuleSet, BearerToken, FollowerRule, ConversationRule, Tweet, User, Relationship
 
 
 def load_creds(path) -> BearerToken:

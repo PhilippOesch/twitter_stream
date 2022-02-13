@@ -1,7 +1,7 @@
 from neo4j import GraphDatabase
 
 from Streaming_Architekture import env_vars
-from Streaming_Architekture.general.project_dataclasses import Tweet, User, Relationship
+from Streaming_Architekture.general.models import Tweet, User, Relationship
 
 
 class Neo4JHelper:

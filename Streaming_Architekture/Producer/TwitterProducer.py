@@ -6,7 +6,7 @@ from kafka import KafkaProducer
 from Streaming_Architekture import env_vars
 from Streaming_Architekture.general import utils
 from Streaming_Architekture.general.TwitterStreamFilterer import FilteredTwitterStream
-from Streaming_Architekture.general.project_dataclasses import BearerToken, RuleSet, ConversationRule, Tweet
+from Streaming_Architekture.general.models import BearerToken, RuleSet, ConversationRule, Tweet
 
 
 def setup_follower_rules(followers: list[str]) -> list:
