@@ -2,6 +2,7 @@ import csv
 
 from textblob_de import TextBlobDE as TextBlob
 
+import analysis_helper as helper
 
 from germansentiment import SentimentModel
 
@@ -70,8 +71,8 @@ def update_sentiment_textblob(filename: str, _data: [dict], sentiments: []):
             writer.writerow(row)
 
 
-analyzed_hashes_tweets, data, header, char_count, userids = utils.get_tweet_infos('data/dataset2/primary_tweets.csv',
-                                                                                  hashtag_treshhold=0)
+dataset_path = 'data/dataset2/primary_tweets.csv'
+
+analyzed_hashes_tweets, data, header, char_count, userids = helper.get_tweet_infos([dataset_path], hashtag_treshhold=0)
 print(char_count)
 analyse_sentiment_textblob("data/dataset2/primary_tweets_sentiment_textblob.csv", data, header)
-# analyse_sentiment_textblob("data/dataset2/primary_tweets_sentiment.csv", data, header)

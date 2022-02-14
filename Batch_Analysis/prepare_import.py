@@ -5,11 +5,14 @@ import analysis_helper as helper
 
 import_header = [":START_ID", ":END_ID", "weight:int", "polarity:float", ":TYPE"]
 
+primary_tweet_dataset = 'data/dataset_primary_tweets_1-1-2021_1-9-2021_textblob.csv'
+secondary_tweet_dataset = 'data/dataset_1-1-2021_1-9-2021_textblob_mentions.csv'
+
 _, primary_tweet_data, _, _, _ = helper.get_tweet_infos(
-    'data/dataset_primary_tweets_1-1-2021_1-9-2021_textblob.csv',
+    [primary_tweet_dataset],
     hashtag_treshhold=0)
 analyzed_hashes_tweets, replydata, _header, char_count, user_ids1 = helper.get_tweet_infos(
-    'data/dataset_1-1-2021_1-9-2021_textblob_mentions.csv',
+    [secondary_tweet_dataset],
     hashtag_treshhold=0)
 
 full_data: [] = list()
@@ -102,7 +105,7 @@ def create_new_relationship_in_dictionary(_relationship_string: str, screen_name
         }
 
 
-# sometimes Users comment themselfs, which is quiet uninteresting. Will start tryiing ignoring self comments
+# sometimes Users comment to themselves, which is quite uninteresting and should be ignored
 
 def prepare_user(_data: [], _filepath):
     result = {}

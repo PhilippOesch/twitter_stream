@@ -1,4 +1,4 @@
-from Streaming_Architekture.general.tweepy_init import python_tweets
+from tweepy_init import python_tweets
 import json
 from typing_extensions import TypedDict
 

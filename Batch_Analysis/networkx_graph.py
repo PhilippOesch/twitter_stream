@@ -95,7 +95,7 @@ class NetworkXGraph:
         self.extract_largest_graph()
         self.print_graph_info()
 
-    def get_average_Polarity(self):
+    def get_average_polarity(self):
         polarity_sum = 0
         weight_sum = 0
         for start, end, data in list(self.graph.edges(data=True)):
@@ -182,16 +182,11 @@ def append_node_colors(_graph, comms, _colors=None):
 
 folder_path: str = "./data/import_data/"
 
-# G = NetworkXGraph(True, folder_path + "all_users_mentions.csv",
-#                   folder_path + "user_relationships_mentions.csv")
 query = """MATCH (u:User)-[r]-() RETURN *"""
 
-# G = NetworkXGraph(load_from_neo4j=True, neo4jquery=query)
 G = NetworkXGraph(load_from_neo4j=False, _nodes_filepath="./data/import_data/all_users_mentions_textblob.csv",
                   _rel_filepath="./data/import_data/user_relationships_mentions_textblob.csv")
 
-print("average Polarity:", G.get_average_Polarity())
+print("average Polarity:", G.get_average_polarity())
 G.export_graph("./data/exported_graph_tables/graph_mentions_textblob.graphml")
 
-# G.filter_polarity(0.5, 1)
-# G.export_graph("./data/exported_graph_tables/graph_polarity_positive.graphml")
